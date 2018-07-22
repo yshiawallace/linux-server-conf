@@ -10,8 +10,10 @@ http://35.182.146.216/
 ## Summary of configurations made to server
 
 ### Upgraded all packages on server (while logged in as non-root user)
-	`sudo apt-get update`
-	`sudo apt-get upgrade`
+```
+sudo apt-get update
+sudo apt-get upgrade
+```
 
 ### Change SSH port from 22 to 2200
 `sudo nano /etc/ssh/sshd_config`
@@ -20,15 +22,17 @@ http://35.182.146.216/
 * restart the sshd servce with `sudo service sshd restart`
 
 ### Configure UFW firewall to deny all incoming connections except on port 2200 and http
-	`sudo ufw default deny incoming`
-	`sudo ufw default allow outgoing`
-	`sudo ufw allow ssh`
-	`sudo ufw allow 2200/tcp`
-	`sudo ufw allow www`
+```
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 2200/tcp
+sudo ufw allow www
+```	
 * Check rules with: 
-	`sudo ufw show added`
+```sudo ufw show added```
 * NB: Make sure that ssh is allowed before you enable firewall or you will be blocked from your server!
-	`sudo ufw enable`
+```sudo ufw enable```
 
 ### Open a new custom port (2200) on Amazon Lightsail Firewall
 
@@ -36,144 +40,148 @@ http://35.182.146.216/
 * Downloaded a key from Lightsail to use until I create my own ssh key pair. Login using this key and continue configurations.
 
 ### Created a new user: 'grader'
-	`sudo adduser grader`
+```sudo adduser grader```
 * follow the prompts and specify password
 
 ### Add new user to sudoers
-	`sudo usermod -aG sudo grader`
+```sudo usermod -aG sudo grader```
 
 ### Switch to new user with:
-	`su grader`
+```su grader```
 * (enter the password as prompted)
 
 ### Generate key pair and copy public key to server
 * In a new terminal window (not logged into server) enter:
-	`ssh-keygen`
+```ssh-keygen```
 * in the terminal window that is logged into server as user 'grader', in the root directory, enter:
-	`mkdir .ssh`
-	`touch .ssh/authorized_keys`
+```
+mkdir .ssh
+touch .ssh/authorized_keys
+```
 * read the key from my local computer with:
-	`cat /Users/yshiawallace/.ssh/id_rsa.pub`
+```cat /Users/yshiawallace/.ssh/id_rsa.pub```
 * Copy the contents of this file
 * Edit the .ssh file on the server (logged in as grader):
-	`sudo nano .ssh/authorized_keys`
+```sudo nano .ssh/authorized_keys```
 * Paste the contents of the local key into this file.
 * Save and close the `.ssh/authorized_keys` file on the server.
 * Give grader access to the .ssh folder:
-	`chmod 700 .ssh`
-	`chmod 644 .ssh/authorized_keys`
+```
+chmod 700 .ssh
+chmod 644 .ssh/authorized_keys
+```	
 * Now the grader can ssh into the server remotely with `ssh grader@35.182.146.216 -p 2200 -i ~/.ssh/id_rsa`	
 
 ### Disable remote login as root. Edit this file:
-	`sudo nano /etc/ssh/sshd_config`
+```sudo nano /etc/ssh/sshd_config```
 * change this line: `#PermitRootLogin yes` to `PermitRootLogin no`
 * Save and close file
 * Restart ssh 
-	`sudo /etc/init.d/sshd restart`
+```sudo /etc/init.d/sshd restart```
 
 ### Sync timezone of server
 * Find timezone
-	`timedatectl list-timezones`
+```timedatectl list-timezones```
 * use space bar to look for the timezone of the server. Mine is: America/New York
 * set the timezone:
-	`sudo timedatectl set-timezone America/New_York`
+```sudo timedatectl set-timezone America/New_York```
 * verify changes with
-	`date`
+```date```
 
 ### Install NTP
-	`sudo apt-get install ntp`
+```sudo apt-get install ntp```
 
 ### Open firewall (UFW) to NTP on port 123
 * Open a new custom port (123) on Amazon Lightsail Firewall. Select 'Custom	UDP	123'.
 * Allow UFW to accept connections from port 123:
-	`sudo ufw allow 123/udp`
+```sudo ufw allow 123/udp```
 * Verify your changes:
-	`sudo ufw show added`
+```sudo ufw show added```
 
 ### Install and configure Apache
-	`sudo apt-get update`
-	`sudo apt-get install apache2`
+```sudo apt-get update```
+```sudo apt-get install apache2```
 * check status of the server:
-	`sudo systemctl status apache2`
+```sudo systemctl status apache2```
 
 
 ### Install Python 2 and mod-wsgi
 * Ubuntu 16.0.4 comes with python installed. My catalog app runs on Python 2.7, so check which version is installed:
-	`which python2`
+```which python2```
 * Install pip for python:
-	`sudo apt-get install python-pip`
+```sudo apt-get install python-pip```
 * Install mod_wsgi:
-	`sudo apt-get install libapache2-mod-wsgi python-dev`
+```sudo apt-get install libapache2-mod-wsgi python-dev```
 * Enable mod_wgsi:
-	`a2enmod wsgi`
+```a2enmod wsgi```
 
 ### Install PostgreSQL
-	`sudo apt-get install postgresql postgresql-contrib`
+```sudo apt-get install postgresql postgresql-contrib```
 
 ### Create a new postgresql database `catalog` and grant permissions to `grader`
 * Switch over to postgres user:
-	`sudo -i -u postgres`
+```sudo -i -u postgres```
 * Enter the psql command line:
-	`psql`
+```psql```
 * Create new user:
-	`CREATE USER formific WITH PASSWORD 'formific';`
+```CREATE USER formific WITH PASSWORD 'formific';```
 * Create a new database:
-	`CREATE DATABASE formific WITH OWNER formific;`
+```CREATE DATABASE formific WITH OWNER formific;```
 * List all database:
-	`\l`
+```\l```
 * enter the database you just created:
-	`\connect formific`
+```\connect formific```
 * View all tables in this database, there should be none yet:
-	`\dt`
+```\dt```
 * Quit psql:
-	`\q`
+```\q```
 * Switch back to `grader` user:
-	`exit`
+```exit```
 
 ### Clone catalog app to server
 * `cd` into `/var/www` and create a new directory called 'formificApp':
-	`sudo mkdir formificApp`
+```sudo mkdir formificApp```
 * `cd` into `formificApp` and 
 * Grant `grader` ownership of the directory:
-	`sudo chown -R grader:grader formificApp`
+```sudo chown -R grader:grader formificApp```
 * Install git:
-	`sudo apt-get install git`
+```sudo apt-get install git```
 * Git clone catalog app repo to the `/var/www/formificApp/formificApp` directory
-	`sudo git clone https://github.com/yshiawallace/formific-item-catalog`
+```sudo git clone https://github.com/yshiawallace/formific-item-catalog```
 * Move app files to `/var/www/formificApp/formificApp` directory:
-	`sudo mv -v /var/www/formificApp/formificApp/formific-item-catalog/vagrant/catalog/* /var/www/formificApp/formificApp`
+```sudo mv -v /var/www/formificApp/formificApp/formific-item-catalog/vagrant/catalog/* /var/www/formificApp/formificApp```
 * Delete old `formific-item-catalog` file from `/var/www/formificApp/formificApp/` recursively:
-	`sudo rm -R formific-item-catalog`
+```sudo rm -R formific-item-catalog```
 * Re-name original catalog app controller file to `__init__.py`:
-	`sudo mv formific.py __init__.py`
+```sudo mv formific.py __init__.py```
 * Edit `__init__.py`:
-	`sudo nano __init__.py`
+```sudo nano __init__.py```
 * Change `app.run(host='0.0.0.0', port=8000)` to `app.run()`
 * Save and close file.
 * Edit `database.py` file:
-	`sudo nano database.py`
+```sudo nano database.py```
 * Change `engine = create_engine('sqlite:///formific.db', convert_unicode=True)` to `engine = create_engine('postgresql://formific:formific@localhost/formific)`
 * make same edit to `starter_items.py`
 
 ### Install and set up a virtual environment with
-	`pip install virtualenv`
-	`virtualenv venv`
+```pip install virtualenv```
+```virtualenv venv```
 * Activate virtual environment:
-	`source venv/bin/activate`
+```source venv/bin/activate```
 
 ### Install Flask with:
-	`pip install Flask`
+```pip install Flask```
 
 ### Install all app dependencies:
-	`pip install sqlalchemy psycopg2 psycopg2-binary httplib2 requests oauth2client`	
+```pip install sqlalchemy psycopg2 psycopg2-binary httplib2 requests oauth2client`	``
 
 ### Test the app by running:
-	`python __init__.py`
+```python __init__.py```
 * You should see a message telling you the app is running ('Running on http://127.0.0.1:5000').
 * Hit `^C` to exit the app.
 
 ### Configure and enable site:
-	`sudo nano /etc/apache2/sites-available/formificApp.conf`
+```sudo nano /etc/apache2/sites-available/formificApp.conf```
 * add the following to this file:
 ```
 <VirtualHost *:80>
@@ -200,11 +208,11 @@ http://35.182.146.216/
 ```
 * Save and close the file.
 * Enable the virtual host with the following command:
-	`sudo a2ensite formificApp.conf`
+```sudo a2ensite formificApp.conf```
 
 ### Create the .wsgi file:
-	`cd /var/www/formificApp`
-	`nano flaskapp.wsgi`
+```cd /var/www/formificApp```
+```nano flaskapp.wsgi```
 * Copy and paste the following into this file:
 ```
 #!/usr/bin/python
@@ -221,23 +229,23 @@ application.secret_key = 'super_secret_key'
 ```
 * Save and close the file.
 * Restart apache:
-	`sudo service apache2 reload`
+```sudo service apache2 reload```
 
 ### Go to URL and see if the app is running
 [http://35.182.146.216/](http://35.182.146.216/)
 
 If there is an error in the terminal window, start looking for what triggered the error. If not start by checking the apache error log:
-	`sudo cat /var/log/apache2/error.log`
+```sudo cat /var/log/apache2/error.log```
 
 To see a feed of the most recent errors as they occur
-	`sudo tail -f /var/log/apache2/error.log`
+```sudo tail -f /var/log/apache2/error.log```
 
 At this point in the configuration I ran into a series of errors and road blocks that took me days to solve. After much intense error log reading, googling, researching, sweating, I FINALLY manage to get the app running.
 
 ### Additional modifications needed to make to get my app running
 1. I re-installed mod_wgsi because I thought it may have been compiled for the wrong version of Python.
 * I uninstalled the existing mod_wgsi first
-	`sudo apt-get purge --auto-remove libapache2-mod-wsgi`
+```sudo apt-get purge --auto-remove libapache2-mod-wsgi```
 * Then I used this resource [https://www.digitalocean.com/community/tutorials/installing-mod_wsgi-on-ubuntu-12-04](https://www.digitalocean.com/community/tutorials/installing-mod_wsgi-on-ubuntu-12-04)
 ```
 mkdir ~/sources
@@ -258,7 +266,7 @@ sudo service apache2 reload
 ```
 
 3. I thought there might be a permissions error, so I granted ownership of all files to the user `grader`
-	`sudo chown -R grader:grader formificApp`
+```sudo chown -R grader:grader formificApp```
 
 4. I had to update quite a few of my app files.
 	* I had to update my template paths to use absolute paths instead of relative paths.
