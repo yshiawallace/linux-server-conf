@@ -7,6 +7,26 @@ For the last project in the nanodegree I created and instance of a Linux server 
 ## Web URL of app
 http://35.182.146.216/
 
+
+## Summary of software/packages installed
+* ntp (Network Time Protocol)
+* apache2
+* python-pip
+* libapache2-mod-wsgi
+* python-dev
+* postgresql
+* postgresql-contrib
+* git
+* virtualenv
+* Flask
+* sqlalchemy
+* psycopg2
+* psycopg2-binary
+* httplib2
+* requests
+* oauth2client
+
+
 ## Summary of configurations made to server
 
 ### Upgraded all packages on server (while logged in as non-root user)
@@ -173,7 +193,7 @@ chmod 644 .ssh/authorized_keys
 ```pip install Flask```
 
 ### Install all app dependencies:
-```pip install sqlalchemy psycopg2 psycopg2-binary httplib2 requests oauth2client`	``
+```pip install sqlalchemy psycopg2 psycopg2-binary httplib2 requests oauth2client```
 
 ### Test the app by running:
 ```python __init__.py```
